@@ -14,10 +14,9 @@ public class MySQLHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		db.execSQL("CREATE TABLE MEMBER (ID INTEGER PRIMARY KEY, NAME TEXT);");
-		db.execSQL("INSERT INTO MEMBER (ID, NAME) VALUES (1,'山田 太郎');");
-		db.execSQL("INSERT INTO MEMBER (ID, NAME) VALUES (2,'山田 花子');");
-		db.execSQL("INSERT INTO MEMBER (ID, NAME) VALUES (3,'佐藤 大輔');");
+		db.execSQL("CREATE TABLE MEMBER (AGE INTEGER, NAME TEXT);");
+		db.execSQL("INSERT INTO MEMBER (AGE, NAME) VALUES (1,'山田 太郎');");
+		db.execSQL("INSERT INTO MEMBER (AGE, NAME) VALUES (2,'山田 花子');");
 	}
 
 	@Override

@@ -7,10 +7,10 @@
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="@string/id" />
+        android:text="@string/age" />
 
     <EditText
-        android:id="@+id/editId"
+        android:id="@+id/edit_age"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:digits="0123456789" />
@@ -26,10 +26,16 @@
         android:layout_height="wrap_content" />
 
     <Button
-        android:id="@+id/saveBottun"
+        android:id="@+id/save_bottun"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/saveButton" />
+        android:text="@string/save_button" />
+
+    <Button
+        android:id="@+id/delete_bottun"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/delete_button" />
 
     <TextView
         android:id="@+id/member"

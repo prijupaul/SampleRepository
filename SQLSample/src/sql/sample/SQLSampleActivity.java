@@ -1,6 +1,7 @@
 package sql.sample;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -15,7 +16,8 @@ public class SQLSampleActivity extends Activity implements OnClickListener {
 	private MySQLHelper mySqlHelper;
 	private SQLiteDatabase db;
 	private Button saveButton;
-	private EditText editId;
+	private Button deleteButton;
+	private EditText editAge;
 	private EditText editName;
 	private TextView textView;
 
@@ -26,39 +28,57 @@ public class SQLSampleActivity extends Activity implements OnClickListener {
 		setContentView(R.layout.main);
 
 		mySqlHelper = new MySQLHelper(this);
-		
-		editId = (EditText) findViewById(R.id.editId);
+
+		editAge = (EditText) findViewById(R.id.edit_age);
 		editName = (EditText) findViewById(R.id.editName);
-		saveButton = (Button) findViewById(R.id.saveBottun);
+		saveButton = (Button) findViewById(R.id.save_bottun);
+		deleteButton = (Button) findViewById(R.id.delete_bottun);
 		textView = (TextView) findViewById(R.id.member);
 
 		saveButton.setOnClickListener(this);
+		deleteButton.setOnClickListener(this);
+
 		showMembers();
 	}
 
 	@Override
+	protected void onDestroy() {
+		if (mySqlHelper != null)
+			mySqlHelper.close();
+	}
+
+	@Override
 	public void onClick(View v) {
-		db = mySqlHelper.getReadableDatabase();
-		String id = editId.getText().toString();
-		String name = editName.getText().toString();
 
-		if ("".equals(id))
-			return;
-		try {
-			db.execSQL("INSERT INTO MEMBER (ID, NAME) VALUES (" + id + ",'" + name + "');");
-		} catch (Exception e) {
-			// 
+		// èëÇ´çûÇ›ópÇÃDBÇéÊìæ
+		db = mySqlHelper.getWritableDatabase();
+		switch (v.getId()) {
+			case R.id.save_bottun:
+				String age = editAge.getText().toString();
+				String name = editName.getText().toString();
+				ContentValues values = new ContentValues();
+				values.put("AGE", age);
+				values.put("NAME", name);
+				db.insert("MEMBER", null, values);
+				break;
+			case R.id.delete_bottun:
+				db.delete("member", null, null);
+				break;
+			default:
+				break;
 		}
-
+		db.close();
 		showMembers();
 	}
 
 	private void showMembers() {
-		Cursor c = db.query("MEMBER", new String[] { "ID", "NAME" }, null, null, null, null, null);
+		// ì«Ç›éÊÇËópÇÃDBÇéÊìæ
+		db = mySqlHelper.getReadableDatabase();
+		Cursor c = db.query("MEMBER", new String[] { "AGE", "NAME" }, null, null, null, null, null);
 
 		StringBuilder sb = new StringBuilder();
 		while (c.moveToNext()) {
-			sb.append("id:").append(c.getInt(0)).append(" name:").append(c.getString(1)).append("\r\n");
+			sb.append("Age:").append(c.getInt(0)).append(" Name:").append(c.getString(1)).append("\r\n");
 		}
 		textView.setText(sb.toString());
 		c.close();
