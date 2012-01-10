@@ -1,0 +1,157 @@
+package webapi.sample;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.params.ClientPNames;
+import org.apache.http.client.params.CookiePolicy;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Button;
+import android.widget.TextView;
+
+public class WebAPISampleActivity extends Activity implements OnClickListener {
+
+	private TextView responseText;
+	private TextView sessionIdText;
+
+	private Button createSessionButton;
+	private Button showSessionButton;
+	private Button deleteSessionButton;
+
+	private WebView webView;
+
+	private String sessionId;
+	private String responseMessage;
+
+	private static final String CONTEXT_ROOT = "http://192.168.1.7:8080/SampleServer";
+	private static final String CREATE_SESSION_URL = "/CreateSessionServlet";
+	private static final String SHOW_SESSION_URL = "/ShowSession.jsp";
+	private static final String DELETE_SESSION_URL = "/DeleteSessionServlet";
+
+	/** Called when the activity is first created. */
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.main);
+
+		// Viewの取得
+		webView = (WebView) findViewById(R.id.webview);
+		responseText = (TextView) findViewById(R.id.responseText);
+		sessionIdText = (TextView) findViewById(R.id.sessionId);
+		createSessionButton = (Button) findViewById(R.id.createSessionButton);
+		showSessionButton = (Button) findViewById(R.id.showSessionButton);
+		deleteSessionButton = (Button) findViewById(R.id.deleteSessionButton);
+
+		// Listenerの設定
+		createSessionButton.setOnClickListener(this);
+		showSessionButton.setOnClickListener(this);
+		deleteSessionButton.setOnClickListener(this);
+		
+		// CookieManagerの初期設定
+		CookieSyncManager.createInstance(this);
+		CookieSyncManager.getInstance().startSync();
+		CookieManager.getInstance().setAcceptCookie(true);
+		CookieManager.getInstance().removeExpiredCookie();
+
+	}
+
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()) {
+			case R.id.createSessionButton:
+				// Submitボタンが押された場合
+				createSession();
+				break;
+			case R.id.showSessionButton:
+				// Submitボタンが押された場合
+				showSession();
+				break;
+			case R.id.deleteSessionButton:
+				// Submitボタンが押された場合
+				deleteSession();
+				break;
+		}
+	}
+
+	private void createSession() {
+
+		DefaultHttpClient httpClient = new DefaultHttpClient();
+		httpClient.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.BROWSER_COMPATIBILITY);
+		HttpPost httppost = new HttpPost(CONTEXT_ROOT + CREATE_SESSION_URL);
+		List<NameValuePair> nameValuePair = new ArrayList<NameValuePair>();
+		nameValuePair.add(new BasicNameValuePair("name", "山田　太郎"));
+
+		BufferedReader br = null;
+		try {
+			httppost.setEntity(new UrlEncodedFormEntity(nameValuePair));
+			HttpResponse response = httpClient.execute(httppost);
+			br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+			responseMessage = br.readLine();
+		} catch (Exception e) {
+			Log.d("MyApp", e.getMessage());
+		} finally {
+			try {
+				if (br != null)
+					br.close();
+			} catch (IOException e) {
+			}
+		}
+
+		CookieStore cookieStore = httpClient.getCookieStore();
+		sessionId = cookieStore.getCookies().get(0).getValue();
+
+		responseText.setText(responseMessage);
+		sessionIdText.setText(sessionId);
+	}
+
+	private void showSession() {
+		if (sessionId != null) {
+			CookieManager.getInstance().setCookie(CONTEXT_ROOT, "JSESSIONID=" + sessionId);
+			CookieSyncManager.getInstance().sync();
+		}
+		webView.loadUrl(CONTEXT_ROOT + SHOW_SESSION_URL);
+		webView.setWebViewClient(new WebViewClient());
+	}
+
+	private void deleteSession() {
+
+		DefaultHttpClient httpClient = new DefaultHttpClient();
+		httpClient.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.BROWSER_COMPATIBILITY);
+		httpClient.getParams().setParameter("Cookie", sessionId);
+		HttpPost httppost = new HttpPost(CONTEXT_ROOT + DELETE_SESSION_URL);
+		
+		BufferedReader br = null;
+		try {
+			HttpResponse response = httpClient.execute(httppost);
+		} catch (Exception e) {
+			Log.d("MyApp", e.getMessage());
+		} finally {
+			try {
+				if (br != null)
+					br.close();
+			} catch (IOException e) {
+			}
+		}
+
+	}
+
+}

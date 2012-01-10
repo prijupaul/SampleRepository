@@ -1,0 +1,68 @@
+package web.api.sample;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.TextView;
+
+public class WebAPISampleActivity extends Activity {
+	
+	boolean isGet = false;
+	TextView text;
+
+	/** Called when the activity is first created. */
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.main);
+
+		text = (TextView) findViewById(R.id.text);
+		Button button = (Button) findViewById(R.id.button);
+		button.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				
+				if(isGet){
+					isGet = false;
+					text.setText("");
+				}
+				Log.d("MyApp", "pressed button");
+				URL url;
+				try {
+
+					url = new URL("http://192.168.0.2:8080/SampleServer/SampleServlet");
+					HttpURLConnection con = (HttpURLConnection) url.openConnection();
+					con.setReadTimeout(10000);
+					con.setConnectTimeout(15000);
+					con.setRequestMethod("POST");
+					
+					con.connect();
+					
+					BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+					String result = br.readLine();
+					Log.d("MyApp", result);
+					text.setText(result);
+					con.disconnect();
+					br.close();
+
+				} catch (Exception e) {
+					Log.d("MyApp",e.getMessage());
+					
+				}
+
+			}
+		});
+
+	}
+}
