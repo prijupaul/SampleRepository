@@ -76,6 +76,19 @@ public class WebAPISampleActivity extends Activity implements OnClickListener {
 		httpClient.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.BROWSER_COMPATIBILITY);
 
 	}
+	
+	@Override
+	protected void onResume(){
+		super.onResume();
+		CookieSyncManager.getInstance().stopSync();
+	}
+	
+	@Override
+	protected void onPause(){
+		super.onResume();
+		CookieSyncManager.getInstance().stopSync();
+	}
+	
 
 	@Override
 	public void onClick(View v) {
@@ -130,7 +143,6 @@ public class WebAPISampleActivity extends Activity implements OnClickListener {
 	}
 
 	private void deleteSession() {
-		httpClient.getParams().setParameter("Cookie", sessionId);
 		HttpPost httppost = new HttpPost(CONTEXT_ROOT + DELETE_SESSION_URL);
 		BufferedReader br = null;
 		try {
